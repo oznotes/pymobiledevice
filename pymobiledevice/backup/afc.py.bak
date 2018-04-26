@@ -36,7 +36,7 @@ from construct.macros import String, ULInt64
 from pymobiledevice.lockdown import LockdownClient
 
 from cmd import Cmd
-from .util import hexdump, parsePlist
+from util import hexdump, parsePlist
 from pprint import pprint
 
 MODEMASK =  0o0000777
@@ -187,7 +187,7 @@ class AFCClient(object):
 
         assert len(t) % 2 == 0
         res = {}
-        for i in range(len(t)/2):
+        for i in xrange(len(t)/2):
             res[t[i*2]] = t[i*2 + 1]
         return res
 
@@ -201,7 +201,7 @@ class AFCClient(object):
     def read_directory(self, dirname):
         status, data = self.do_operation(AFC_OP_READ_DIR, dirname)
         if status == AFC_E_SUCCESS:
-            return [x for x in data.split("\x00") if x!=""]
+            return filter(lambda x:x!="", data.split("\x00"))
         return []
 
 
@@ -290,7 +290,7 @@ class AFCClient(object):
         hh = struct.pack("<Q", handle)
         segments = len(data) / MAXIMUM_WRITE_SIZE
         try:
-            for i in range(segments):
+            for i in xrange(segments):
                 self.dispatch_packet(AFC_OP_WRITE,
                                  hh + data[i*MAXIMUM_WRITE_SIZE:(i+1)*MAXIMUM_WRITE_SIZE],
                                      this_length=48)
@@ -382,7 +382,7 @@ class AFCShell(Cmd):
 
 
     def do_pwd(self, p):
-        print((self.curdir))
+        print(self.curdir)
 
 
     def do_link(self, p):
@@ -422,7 +422,7 @@ class AFCShell(Cmd):
         if data and p.endswith(".plist"):
             pprint(parsePlist(data))
         else:
-            print(data)
+            print data
 
 
     def do_rm(self, p):
@@ -445,7 +445,7 @@ class AFCShell(Cmd):
 
         f =  self.afc.get_file_info(path)
         if not f:
-            print("Source file does not exist..")
+            print "Source file does not exist.."
             return
 
         out_path = out + "/" + path
@@ -472,7 +472,7 @@ class AFCShell(Cmd):
         fromTo = p.split()
         if len(fromTo) != 2:
             return
-        print("from %s to %s" % (fromTo[0], fromTo[1]))
+        print "from %s to %s" % (fromTo[0], fromTo[1])
         if os.path.isdir(fromTo[0]):
             self.afc.make_directory(os.path.join(fromTo[1]))
             for x in os.listdir(fromTo[0]):
@@ -487,7 +487,7 @@ class AFCShell(Cmd):
 
 
     def do_head(self, p):
-        print(self.afc.get_file_contents(self.curdir + "/" + p)[:32])
+        print self.afc.get_file_contents(self.curdir + "/" + p)[:32]
 
 
     def do_hexdump(self, p):
@@ -506,7 +506,7 @@ class AFCShell(Cmd):
 
 
     def do_mkdir(self, p):
-        print(self.afc.make_directory(p))
+        print self.afc.make_directory(p)
 
 
     def do_rmdir(self, p):
@@ -514,7 +514,7 @@ class AFCShell(Cmd):
 
 
     def do_infos(self, p):
-        print(self.afc.get_device_infos())
+        print self.afc.get_device_infos()
 
 
     def do_rmdir(self, p):

@@ -52,7 +52,7 @@ class CannotStopSessionError(Exception):
 
 class StartServiceError(Exception):
     def __init__(self, message):
-        print("[ERROR] %s" % message)
+        print "[ERROR] %s" % message
 
 class FatalPairingError(Exception):
     pass
@@ -168,7 +168,7 @@ class LockdownClient(object):
         ValidatePair = {"Label": self.label, "Request": "ValidatePair", "PairRecord": pair_record}
         self.c.sendPlist(ValidatePair)
         r = self.c.recvPlist()
-        if not r or "Error" in r:
+        if not r or r.has_key("Error"):
             pair_record = None
             self.logger.error("ValidatePair fail: %s", ValidatePair)
             return False
@@ -208,7 +208,7 @@ class LockdownClient(object):
         self.c.sendPlist(pair)
         pair = self.c.recvPlist()
 
-        if pair and  pair.get("Result") == "Success" or "EscrowBag" in pair:
+        if pair and  pair.get("Result") == "Success" or pair.has_key("EscrowBag"):
             pair_record["HostPrivateKey"] = plistlib.Data(privateKeyPem)
             pair_record["EscrowBag"] = pair.get("EscrowBag")
             writeHomeFile(HOMEFOLDER, "%s.plist" % self.identifier, plistlib.writePlistToString(pair_record))

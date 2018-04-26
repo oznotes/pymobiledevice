@@ -28,8 +28,8 @@ import logging
 from pymobiledevice.lockdown import LockdownClient
 
 from datetime import datetime
-from .util import getHomePath
-from .util import hexdump
+from util import getHomePath
+from util import hexdump
 from sys import exit
 from optparse import OptionParser
 
@@ -65,7 +65,7 @@ class Syslog(object):
             if handler:
                 handler(data)
             else:
-                print(data)
+                print data
 
             if logFile:
                 with open(logFile, 'a') as f:
@@ -91,7 +91,7 @@ if __name__ == "__main__":
                 syslog = Syslog(lockdown=lckdn)
                 syslog.watch(procName=options.procName,logFile=options.logFile)
             except KeyboardInterrupt:
-                print("KeyboardInterrupt caught")
+                print "KeyboardInterrupt caught"
                 raise
             else:
                 pass

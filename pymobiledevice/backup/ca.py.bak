@@ -136,9 +136,9 @@ def ca_do_everything(DevicePublicKey):
 if __name__ == '__main__':
     rsa = generateRSAKey()
     pkey = makePKey(rsa)
-    print((pkey.as_pem(None)))
+    print(pkey.as_pem(None))
     req = makeRequest(pkey, "The Issuer Monkey")
     cert = makeCert(req, pkey)
-    print((cert.as_text()))
+    print(cert.as_text())
     cert.save_pem('my_ca_cert.pem')
     rsa.save_key('my_key.pem', None)

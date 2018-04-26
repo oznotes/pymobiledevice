@@ -23,8 +23,8 @@
 #
 
 
-from .usbmux import usbmux
-from .util.bplist import BPlistReader
+from usbmux import usbmux
+from util.bplist import BPlistReader
 import plistlib
 import ssl
 import struct

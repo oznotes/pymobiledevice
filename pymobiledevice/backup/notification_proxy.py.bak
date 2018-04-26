@@ -23,7 +23,7 @@
 #
 
 import plistlib
-import _thread
+import thread
 import time
 import logging
 
@@ -128,7 +128,7 @@ class NPClient(object):
             if np_name:
                 userdata = args.get("userdata")
                 try:
-                    _thread.start_new_thread( args.get("callback") , (np_name, userdata, ) )
+                    thread.start_new_thread( args.get("callback") , (np_name, userdata, ) )
                 except:
                     self.logger.error("Error: unable to start thread")
 
@@ -143,9 +143,9 @@ class NPClient(object):
         }
 
         try:
-            _thread.start_new_thread( self.notifier, ("NotificationProxyNotifier_"+notification, np_data, ) )
+            thread.start_new_thread( self.notifier, ("NotificationProxyNotifier_"+notification, np_data, ) )
         except:
-            print("Error: unable to start thread")
+            print "Error: unable to start thread"
 
         while(1):
             time.sleep(1)
@@ -153,8 +153,8 @@ class NPClient(object):
 
 
 def cb_test(name,data=None):
-    print("Got Notification >> %s" % name)
-    print("Data:")
+    print "Got Notification >> %s" % name
+    print "Data:"
     pprint(data)
 
 

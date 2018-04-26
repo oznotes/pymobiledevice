@@ -31,7 +31,7 @@ import logging
 
 from optparse import OptionParser
 from pprint import pprint
-from .util import write_file, hexdump
+from util import write_file, hexdump
 from biplist import writePlist, readPlist, Data
 from struct import unpack, pack
 from time import mktime, gmtime, sleep, time
@@ -243,7 +243,7 @@ class MobileBackup2(MobileBackup):
 
     def mb2_handle_move_files(self, msg):
         self.logger.info("Moving %d files", len(msg[1]) )
-        for k,v in list(msg[1].items()):
+        for k,v in msg[1].items():
             self.logger.info("Renaming:\n\t%s \n\tto %s", self.check_filename(k), self.check_filename(v))
             os.rename(self.check_filename(k),self.check_filename(v))
         self.mobilebackup2_send_status_response(0)
@@ -256,7 +256,7 @@ class MobileBackup2(MobileBackup):
                 filename = self.check_filename(filename)
                 if os.path.isfile(filename):
                     os.unlink(filename)
-            except Exception as e:
+            except Exception, e:
                 self.logger.error(e)
         self.mobilebackup2_send_status_response(0)
 
@@ -449,11 +449,11 @@ class MobileBackup2(MobileBackup):
             self.logger.error("not a valid backup folder")
             return -1
         if manifest.get("IsEncrypted"):
-            print("Backup is encrypted, enter password : ")
+            print "Backup is encrypted, enter password : "
             if password:
                 self.password = password
             else:
-                self.password = input()
+                self.password = raw_input()
             options["Password"] = self.password
         self.mobilebackup2_send_request("Restore", self.udid, self.udid, options)
         self.work_loop()

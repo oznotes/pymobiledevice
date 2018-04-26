@@ -163,15 +163,15 @@ class installation_proxy(object):
         return path
 
     def get_apps(self,appTypes=["User"]):
-        return [app for app in list(self.apps_info().values())
+        return [app for app in self.apps_info().values()
                 if app.get("ApplicationType") in appTypes]
 
     def print_apps(self, appType=["User"]):
         for app in self.get_apps(appType):
-            print(("%s : %s => %s" %  (app.get("CFBundleDisplayName"),
+            print ("%s : %s => %s" %  (app.get("CFBundleDisplayName"),
                                       app.get("CFBundleIdentifier"),
                                       app.get("Path") if app.get("Path")
-                                      else app.get("Container"))).encode('utf-8'))
+                                      else app.get("Container"))).encode('utf-8')
 
     def get_apps_bid(self,appTypes=["User"]):
         return [app["CFBundleIdentifier"]
