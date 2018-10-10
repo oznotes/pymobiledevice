@@ -24,12 +24,12 @@
 
 import logging
 import plistlib
-
-from pymobiledevice.util import read_file
-from pymobiledevice.lockdown import LockdownClient
-
 from optparse import OptionParser
 from pprint import pprint
+
+from pymobiledevice.lockdown import LockdownClient
+from pymobiledevice.util import read_file
+
 
 class MobileConfigService(object):
     def __init__(self, lockdown, udid=None, logger=None):
@@ -38,7 +38,7 @@ class MobileConfigService(object):
         self.service = lockdown.startService("com.apple.mobile.MCInstall")
 
     def GetProfileList(self):
-        self.service.sendPlist({"RequestType":"GetProfileList"})
+        self.service.sendPlist({"RequestType": "GetProfileList"})
         res = self.service.recvPlist()
         if res.get("Status") != "Acknowledged":
             self.logger.error("GetProfileList error")
@@ -48,7 +48,8 @@ class MobileConfigService(object):
 
     def InstallProfile(self, s):
         #s = plistlib.writePlistToString(payload)
-        self.service.sendPlist({"RequestType":"InstallProfile", "Payload": plistlib.Data(s)})
+        self.service.sendPlist(
+            {"RequestType": "InstallProfile", "Payload": plistlib.Data(s)})
         return self.service.recvPlist()
 
     def RemoveProfile(self, ident):
@@ -56,26 +57,29 @@ class MobileConfigService(object):
         if not profiles:
             return
         if ident not in profiles["ProfileMetadata"]:
-            self.logger.info("Trying to remove not installed profile %s", ident)
+            self.logger.info(
+                "Trying to remove not installed profile %s", ident)
             return
         meta = profiles["ProfileMetadata"][ident]
         pprint(meta)
         data = plistlib.writePlistToString({"PayloadType": "Configuration",
-             "PayloadIdentifier": ident,
-             "PayloadUUID": meta["PayloadUUID"],
-             "PayloadVersion": meta["PayloadVersion"]
-         })
-        self.service.sendPlist({"RequestType":"RemoveProfile", "ProfileIdentifier": plistlib.Data(data)})
+                                            "PayloadIdentifier": ident,
+                                            "PayloadUUID": meta["PayloadUUID"],
+                                            "PayloadVersion": meta["PayloadVersion"]
+                                            })
+        self.service.sendPlist(
+            {"RequestType": "RemoveProfile", "ProfileIdentifier": plistlib.Data(data)})
         return self.service.recvPlist()
+
 
 def main():
     parser = OptionParser(usage="%prog")
     parser.add_option("-l", "--list", dest="list", action="store_true",
                       default=False, help="List installed profiles")
     parser.add_option("-i", "--install", dest="install", action="store",
-                  metavar="FILE", help="Install profile")
+                      metavar="FILE", help="Install profile")
     parser.add_option("-r", "--remove", dest="remove", action="store",
-                  metavar="IDENTIFIER", help="Remove profile")
+                      metavar="IDENTIFIER", help="Remove profile")
     (options, args) = parser.parse_args()
 
     if not options.list and not options.install and not options.remove:
@@ -91,6 +95,6 @@ def main():
     elif options.remove:
         pprint(mc.RemoveProfile(options.remove))
 
+
 if __name__ == "__main__":
     main()
-

@@ -22,15 +22,15 @@
 #
 #
 
+import logging
 import os
 import plistlib
-import logging
+from optparse import OptionParser
+from pprint import pprint
+from time import gmtime, strftime
 
 from pymobiledevice.lockdown import LockdownClient
 
-from pprint import pprint
-from time import gmtime, strftime
-from optparse import OptionParser
 
 class screenshotr(object):
     def __init__(self, lockdown=None, serviceName='com.apple.mobile.screenshotr', udid=None, logger=None):
@@ -39,14 +39,16 @@ class screenshotr(object):
         self.service = self.lockdown.startService(serviceName)
         DLMessageVersionExchange = self.service.recvPlist()
         version_major = DLMessageVersionExchange[1]
-        self.service.sendPlist(["DLMessageVersionExchange", "DLVersionsOk", version_major ])
+        self.service.sendPlist(
+            ["DLMessageVersionExchange", "DLVersionsOk", version_major])
         DLMessageDeviceReady = self.service.recvPlist()
 
     def stop_session(self):
         self.service.close()
 
     def take_screenshot(self):
-        self.service.sendPlist(['DLMessageProcessMessage', {'MessageType': 'ScreenShotRequest'}])
+        self.service.sendPlist(
+            ['DLMessageProcessMessage', {'MessageType': 'ScreenShotRequest'}])
         res = self.service.recvPlist()
 
         assert len(res) == 2
@@ -57,13 +59,14 @@ class screenshotr(object):
             return data
         return None
 
+
 if __name__ == '__main__':
     parser = OptionParser(usage='%prog')
     parser.add_option("-u", "--udid",
-                  default=False, action="store", dest="device_udid", metavar="DEVICE_UDID",
-                  help="Device udid")
+                      default=False, action="store", dest="device_udid", metavar="DEVICE_UDID",
+                      help="Device udid")
     parser.add_option('-p', '--path', dest='outDir', default=False,
-            help='Output Directory (default: . )', type='string')
+                      help='Output Directory (default: . )', type='string')
     (options, args) = parser.parse_args()
 
     outPath = '.'
@@ -75,9 +78,8 @@ if __name__ == '__main__':
     screenshotr = screenshotr(lockdown=lckdn)
     data = screenshotr.take_screenshot()
     if data:
-        filename = strftime('screenshot-%Y-%m-%d-%H-%M-%S.tif',gmtime())
+        filename = strftime('screenshot-%Y-%m-%d-%H-%M-%S.tif', gmtime())
         outPath = os.path.join(outPath, filename)
         print('Saving Screenshot at %s' % outPath)
-        o = open(outPath,'wb')
+        o = open(outPath, 'wb')
         o.write(data)
-

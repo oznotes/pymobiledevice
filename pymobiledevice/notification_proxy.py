@@ -22,43 +22,42 @@
 #
 #
 
-import plistlib
-import _thread
-import time
 import logging
-
-from pymobiledevice.lockdown import LockdownClient
-
+import plistlib
+import time
 from pprint import pprint
 
+import _thread
+from pymobiledevice.lockdown import LockdownClient
+
 # NP Client to device Notifications (post_notification)
-NP_SYNC_WILL_START           = "com.apple.itunes-mobdev.syncWillStart"
-NP_SYNC_DID_START            = "com.apple.itunes-mobdev.syncDidStart"
-NP_SYNC_DID_FINISH           = "com.apple.itunes-mobdev.syncDidFinish"
-NP_SYNC_LOCK_REQUEST         = "com.apple.itunes-mobdev.syncLockRequest"
+NP_SYNC_WILL_START = "com.apple.itunes-mobdev.syncWillStart"
+NP_SYNC_DID_START = "com.apple.itunes-mobdev.syncDidStart"
+NP_SYNC_DID_FINISH = "com.apple.itunes-mobdev.syncDidFinish"
+NP_SYNC_LOCK_REQUEST = "com.apple.itunes-mobdev.syncLockRequest"
 
 # Device to NP Client Notifications (get_notification)
-NP_SYNC_CANCEL_REQUEST       = "com.apple.itunes-client.syncCancelRequest"
-NP_SYNC_SUSPEND_REQUEST      = "com.apple.itunes-client.syncSuspendRequest"
-NP_SYNC_RESUME_REQUEST       = "com.apple.itunes-client.syncResumeRequest"
-NP_PHONE_NUMBER_CHANGED      = "com.apple.mobile.lockdown.phone_number_changed"
-NP_DEVICE_NAME_CHANGED       = "com.apple.mobile.lockdown.device_name_changed"
-NP_TIMEZONE_CHANGED          = "com.apple.mobile.lockdown.timezone_changed"
-NP_TRUSTED_HOST_ATTACHED     = "com.apple.mobile.lockdown.trusted_host_attached"
-NP_HOST_DETACHED             = "com.apple.mobile.lockdown.host_detached"
-NP_HOST_ATTACHED             = "com.apple.mobile.lockdown.host_attached"
-NP_REGISTRATION_FAILED       = "com.apple.mobile.lockdown.registration_failed"
-NP_ACTIVATION_STATE          = "com.apple.mobile.lockdown.activation_state"
-NP_BRICK_STATE               = "com.apple.mobile.lockdown.brick_state"
-NP_DISK_USAGE_CHANGED        = "com.apple.mobile.lockdown.disk_usage_changed"
-NP_DS_DOMAIN_CHANGED         = "com.apple.mobile.data_sync.domain_changed"
-NP_BACKUP_DOMAIN_CHANGED     = "com.apple.mobile.backup.domain_changed"
-NP_APP_INSTALLED             = "com.apple.mobile.application_installed"
-NP_APP_UNINSTALLED           = "com.apple.mobile.application_uninstalled"
-NP_DEV_IMAGE_MOUNTED         = "com.apple.mobile.developer_image_mounted"
-NP_ATTEMPTACTIVATION         = "com.apple.springboard.attemptactivation"
-NP_ITDBPREP_DID_END          = "com.apple.itdbprep.notification.didEnd"
-NP_LANGUAGE_CHANGED          = "com.apple.language.changed"
+NP_SYNC_CANCEL_REQUEST = "com.apple.itunes-client.syncCancelRequest"
+NP_SYNC_SUSPEND_REQUEST = "com.apple.itunes-client.syncSuspendRequest"
+NP_SYNC_RESUME_REQUEST = "com.apple.itunes-client.syncResumeRequest"
+NP_PHONE_NUMBER_CHANGED = "com.apple.mobile.lockdown.phone_number_changed"
+NP_DEVICE_NAME_CHANGED = "com.apple.mobile.lockdown.device_name_changed"
+NP_TIMEZONE_CHANGED = "com.apple.mobile.lockdown.timezone_changed"
+NP_TRUSTED_HOST_ATTACHED = "com.apple.mobile.lockdown.trusted_host_attached"
+NP_HOST_DETACHED = "com.apple.mobile.lockdown.host_detached"
+NP_HOST_ATTACHED = "com.apple.mobile.lockdown.host_attached"
+NP_REGISTRATION_FAILED = "com.apple.mobile.lockdown.registration_failed"
+NP_ACTIVATION_STATE = "com.apple.mobile.lockdown.activation_state"
+NP_BRICK_STATE = "com.apple.mobile.lockdown.brick_state"
+NP_DISK_USAGE_CHANGED = "com.apple.mobile.lockdown.disk_usage_changed"
+NP_DS_DOMAIN_CHANGED = "com.apple.mobile.data_sync.domain_changed"
+NP_BACKUP_DOMAIN_CHANGED = "com.apple.mobile.backup.domain_changed"
+NP_APP_INSTALLED = "com.apple.mobile.application_installed"
+NP_APP_UNINSTALLED = "com.apple.mobile.application_uninstalled"
+NP_DEV_IMAGE_MOUNTED = "com.apple.mobile.developer_image_mounted"
+NP_ATTEMPTACTIVATION = "com.apple.springboard.attemptactivation"
+NP_ITDBPREP_DID_END = "com.apple.itdbprep.notification.didEnd"
+NP_LANGUAGE_CHANGED = "com.apple.language.changed"
 NP_ADDRESS_BOOK_PREF_CHANGED = "com.apple.AddressBook.PreferenceChanged"
 
 
@@ -72,35 +71,33 @@ class NPClient(object):
         self.logger.info("Disconecting...")
         self.service.close()
 
-
     def post_notification(self, notification):
-        #Sends a notification to the device's notification_proxy.
+        # Sends a notification to the device's notification_proxy.
 
         self.service.sendPlist({"Command": "PostNotification",
                                 "Name": notification})
 
         self.service.sendPlist({"Command": "Shutdown"})
         res = self.service.recvPlist()
-        #pprint(res)
+        # pprint(res)
         if res:
             if res.get("Command") == "ProxyDeath":
                 return res.get("Command")
             else:
-                self.logger.error("Got unknown NotificationProxy command %s", res.get("Command"))
+                self.logger.error(
+                    "Got unknown NotificationProxy command %s", res.get("Command"))
                 self.logger.debug(res)
         return
 
-
     def observe_notification(self, notification):
-        #Tells the device to send a notification on the specified event
+        # Tells the device to send a notification on the specified event
 
         self.logger.info("Observing %s", notification)
         self.service.sendPlist({"Command": "ObserveNotification",
                                 "Name": notification})
 
-
     def get_notification(self, notification):
-        #Checks if a notification has been sent by the device
+        # Checks if a notification has been sent by the device
 
         res = self.service.recvPlist()
         if res:
@@ -109,12 +106,12 @@ class NPClient(object):
                     return res.get("Name")
 
             elif res.get("Command") == "ProxyDeath":
-                    self.logger.error("NotificationProxy died!")
+                self.logger.error("NotificationProxy died!")
             else:
-                self.logger.warn("Got unknown NotificationProxy command %s", res.get("Command"))
+                self.logger.warn(
+                    "Got unknown NotificationProxy command %s", res.get("Command"))
                 self.logger.debug(res)
         return
-
 
     def notifier(self, name, args=None):
 
@@ -128,10 +125,10 @@ class NPClient(object):
             if np_name:
                 userdata = args.get("userdata")
                 try:
-                    _thread.start_new_thread( args.get("callback") , (np_name, userdata, ) )
+                    _thread.start_new_thread(
+                        args.get("callback"), (np_name, userdata, ))
                 except:
                     self.logger.error("Error: unable to start thread")
-
 
     def subscribe(self, notification, cb, data=None):
 
@@ -143,7 +140,8 @@ class NPClient(object):
         }
 
         try:
-            _thread.start_new_thread( self.notifier, ("NotificationProxyNotifier_"+notification, np_data, ) )
+            _thread.start_new_thread(
+                self.notifier, ("NotificationProxyNotifier_"+notification, np_data, ))
         except:
             print("Error: unable to start thread")
 
@@ -151,8 +149,7 @@ class NPClient(object):
             time.sleep(1)
 
 
-
-def cb_test(name,data=None):
+def cb_test(name, data=None):
     print("Got Notification >> %s" % name)
     print("Data:")
     pprint(data)
@@ -161,4 +158,3 @@ def cb_test(name,data=None):
 if __name__ == "__main__":
     np = NPClient()
     np.subscribe(NP_DEVICE_NAME_CHANGED, cb_test, data=None)
-

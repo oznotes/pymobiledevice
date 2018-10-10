@@ -11,47 +11,55 @@ Authors: Heikki Toivonen
          Mathieu RENARD
 """
 
-from M2Crypto import RSA, X509, EVP, m2, BIO
-from M2Crypto.RSA import load_pub_key_bio
-from pyasn1.type import univ
-from pyasn1.codec.der import encoder as der_encoder
-from pyasn1.codec.der import decoder as der_decoder
-import struct
 import base64
+import struct
 from pprint import *
+
+from M2Crypto import BIO, EVP, RSA, X509, m2
+from M2Crypto.RSA import load_pub_key_bio
+from pyasn1.codec.der import decoder as der_decoder
+from pyasn1.codec.der import encoder as der_encoder
+from pyasn1.type import univ
 
 
 def convertPKCS1toPKCS8pubKey(bitsdata):
     pubkey_pkcs1_b64 = b''.join(bitsdata.split(b'\n')[1:-2])
-    pubkey_pkcs1, restOfInput = der_decoder.decode(base64.b64decode(pubkey_pkcs1_b64))
+    pubkey_pkcs1, restOfInput = der_decoder.decode(
+        base64.b64decode(pubkey_pkcs1_b64))
     bitstring = univ.Sequence()
     bitstring.setComponentByPosition(0, univ.Integer(pubkey_pkcs1[0]))
     bitstring.setComponentByPosition(1, univ.Integer(pubkey_pkcs1[1]))
     bitstring = der_encoder.encode(bitstring)
     try:
-        bitstring = ''.join([('00000000'+bin(ord(x))[2:])[-8:] for x in list(bitstring)])
+        bitstring = ''.join([('00000000'+bin(ord(x))[2:])[-8:]
+                             for x in list(bitstring)])
     except:
-        bitstring = ''.join([('00000000'+bin(x)[2:])[-8:] for x in list(bitstring)])
+        bitstring = ''.join([('00000000'+bin(x)[2:])[-8:]
+                             for x in list(bitstring)])
     bitstring = univ.BitString("'%s'B" % bitstring)
     pubkeyid = univ.Sequence()
-    pubkeyid.setComponentByPosition(0, univ.ObjectIdentifier('1.2.840.113549.1.1.1')) # == OID for rsaEncryption
+    pubkeyid.setComponentByPosition(0, univ.ObjectIdentifier(
+        '1.2.840.113549.1.1.1'))  # == OID for rsaEncryption
     pubkeyid.setComponentByPosition(1, univ.Null(''))
     pubkey_seq = univ.Sequence()
     pubkey_seq.setComponentByPosition(0, pubkeyid)
     pubkey_seq.setComponentByPosition(1, bitstring)
     base64.MAXBINSIZE = (64//4)*3
-    res =  b"-----BEGIN PUBLIC KEY-----\n"
+    res = b"-----BEGIN PUBLIC KEY-----\n"
     res += base64.encodestring(der_encoder.encode(pubkey_seq))
     res += b"-----END PUBLIC KEY-----\n"
     return res
 
+
 def generateRSAKey():
     return RSA.gen_key(2048, m2.RSA_F4)
+
 
 def makePKey(key):
     pkey = EVP.PKey()
     pkey.assign_rsa(key)
     return pkey
+
 
 def makeRequest(pkey, cn):
     req = X509.Request()
@@ -71,6 +79,7 @@ def makeRequest(pkey, cn):
     req.add_extensions(extstack)
     # req.sign(pkey, 'sha1')
     return req
+
 
 def makeCert(req, caPkey):
     pkey = req.get_pubkey()
@@ -113,12 +122,14 @@ def makeCert(req, caPkey):
 
     return cert
 
+
 def ca():
     key = generateRSAKey()
     pkey = makePKey(key)
     req = makeRequest(pkey)
     cert = makeCert(req, pkey)
     return (cert, pkey)
+
 
 def ca_do_everything(DevicePublicKey):
     rsa = generateRSAKey()
@@ -132,6 +143,7 @@ def ca_do_everything(DevicePublicKey):
     req = makeRequest(pkey2, "Device")
     cert2 = makeCert(req, privateKey)
     return cert.as_pem(), privateKey.as_pem(None), cert2.as_pem()
+
 
 if __name__ == '__main__':
     rsa = generateRSAKey()

@@ -22,25 +22,25 @@
 #
 #
 
-import os
 import logging
-
-from pymobiledevice.lockdown import LockdownClient
-from pymobiledevice.afc import AFCClient, AFCShell
-
-from pprint import pprint
+import os
 from optparse import OptionParser
+from pprint import pprint
+
+from pymobiledevice.afc import AFCClient, AFCShell
+from pymobiledevice.lockdown import LockdownClient
 
 
 class HouseArrestClient(AFCClient):
 
     def __init__(self, lockdown=None, serviceName="com.apple.mobile.house_arrest",
-                        service=None, udid=None, logger=None):
+                 service=None, udid=None, logger=None):
 
         self.logger = logger or logging.getLogger(__name__)
         self.lockdown = lockdown if lockdown else LockdownClient(udid=udid)
         self.serviceName = serviceName
-        self.service = service if service else self.lockdown.startService(self.serviceName)
+        self.service = service if service else self.lockdown.startService(
+            self.serviceName)
 
     def stop_session(self):
         self.logger.info("Disconecting...")
@@ -65,9 +65,9 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.WARN)
     parser = OptionParser(usage="%prog -a  applicationId")
     parser.add_option("-a", "--application", dest="applicationId", default=False,
-                  help="Application ID <com.apple.iBooks>", type="string")
+                      help="Application ID <com.apple.iBooks>", type="string")
     parser.add_option("-c", "--command", dest="cmd", default=False,
-                  help="House_Arrest commands: ", type="string")
+                      help="House_Arrest commands: ", type="string")
 
     (options, args) = parser.parse_args()
     h = HouseArrestClient()
@@ -75,10 +75,3 @@ if __name__ == "__main__":
         h.shell(options.applicationId, cmd=options.cmd)
     else:
         h.shell(options.applicationId)
-
-
-
-
-
-
-

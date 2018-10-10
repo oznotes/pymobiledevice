@@ -18,16 +18,17 @@
  *  DRI: Josh de Cesare
  */
 """
-from array import array
 import struct
+from array import array
 
 N = 4096
 F = 18
 THRESHOLD = 2
 NIL = N
 
+
 def decompress_lzss(str):
-    if str[:8] !="complzss":
+    if str[:8] != "complzss":
         print("decompress_lzss: complzss magic missing")
         return
     decompsize = struct.unpack(">L", str[12:16])[0]
@@ -43,29 +44,36 @@ def decompress_lzss(str):
         if ((flags & 0x100) == 0):
             if (srcidx >= srclen):
                 break
-            c = src[srcidx]; srcidx += 1
-            flags = c | 0xFF00;
+            c = src[srcidx]
+            srcidx += 1
+            flags = c | 0xFF00
 
         if (flags & 1):
             if (srcidx >= srclen):
                 break
-            c = src[srcidx]; srcidx += 1
-            dst[dstidx] = c; dstidx += 1
-            text_buf[r] = c; r += 1
-            r &= (N - 1);
+            c = src[srcidx]
+            srcidx += 1
+            dst[dstidx] = c
+            dstidx += 1
+            text_buf[r] = c
+            r += 1
+            r &= (N - 1)
         else:
             if (srcidx >= srclen):
                 break
-            i = src[srcidx]; srcidx += 1
+            i = src[srcidx]
+            srcidx += 1
             if (srcidx >= srclen):
                 break
-            j = src[srcidx]; srcidx += 1
+            j = src[srcidx]
+            srcidx += 1
             i |= ((j & 0xF0) << 4)
-            j  =  (j & 0x0F) + THRESHOLD
+            j = (j & 0x0F) + THRESHOLD
             for k in range(j+1):
                 c = text_buf[(i + k) & (N - 1)]
-                dst[dstidx] = c; dstidx += 1
-                text_buf[r] = c; r += 1
+                dst[dstidx] = c
+                dstidx += 1
+                text_buf[r] = c
+                r += 1
                 r &= (N - 1)
     return dst.tostring()
-
